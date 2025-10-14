@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Type 2 Building Cost Estimator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #2c3e50;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        header p {
+            font-size: 1.1em;
+            color: #555;
+        }
+
+        .content-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .card h2 {
+            font-size: 1.5em;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 500;
+            font-size: 0.95em;
+        }
+
+        .label-with-tooltip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tooltip {
+            position: relative;
+            cursor: help;
+            width: 18px;
+            height: 18px;
+            background: #3498db;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75em;
+            font-weight: bold;
+        }
+
+        .tooltip:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 125%;
+            left: -50%;
+            width: 200px;
+            background: #2c3e50;
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.85em;
+            font-weight: normal;
+            white-space: normal;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ecf0f1;
+            border-radius: 6px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+            font-family: inherit;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+            background-color: #f8fbff;
+        }
+
+        .unit-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .unit-btn {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #ecf0f1;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .unit-btn.active {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
+        .quality-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .quality-btn {
+            padding: 12px;
+            border: 2px solid #ecf0f1;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            color: #2c3e50;
+            text-align: center;
+        }
+
+        .quality-btn:hover {
+            border-color: #3498db;
+        }
+
+        .quality-btn.active {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
+        button.submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.05em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        button.submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+        }
+
+        button.submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .cost-summary {
+            background: linear-gradient(135deg, #ecf0f1 0%, #bdc3c7 100%);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .cost-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .cost-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .cost-label {
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        .cost-value {
+            font-size: 1.15em;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .total-cost {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border: 3px solid #3498db;
+        }
+
+        .total-cost-label {
+            color: #555;
+            font-size: 1em;
+            margin-bottom: 8px;
+        }
+
+        .total-cost-value {
+            font-size: 2.2em;
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .pdf-btn {
+            width: 100%;
+            margin-top: 15px;
+            padding: 12px;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .pdf-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(39, 174, 96, 0.4);
+        }
+
+        .info-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 40px;
+        }
+
+        .info-section h2 {
+            font-size: 1.5em;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .info-section p {
+            color: #555;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .info-list {
+            margin: 15px 0;
+            padding-left: 20px;
+        }
+
+        .info-list li {
+            color: #555;
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        footer {
+            text-align: center;
+            color: #555;
+            font-size: 0.9em;
+            margin-top: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .content-wrapper {
+                grid-template-columns: 1fr;
+            }
+
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .quality-selector {
+                grid-template-columns: 1fr;
+            }
+
+            .total-cost-value {
+                font-size: 1.8em;
+            }
+        }
+
+        .placeholder-message {
+            text-align: center;
+            color: #95a5a6;
+            padding: 30px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Type 2 Building Cost Estimator</h1>
+            <p>Calculate reinforced concrete framed structure construction costs instantly</p>
+        </header>
+
+        <div class="content-wrapper">
+            <!-- Input Form Section -->
+            <div class="card">
+                <h2>Project Parameters</h2>
+                
+                <div class="form-group">
+                    <label class="label-with-tooltip">
+                        Built-up Area
+                        <span class="tooltip" data-tooltip="The total enclosed floor area of the building">?</span>
+                    </label>
+                    <div class="unit-selector">
+                        <button class="unit-btn active" onclick="setUnit('sqft')">Sq. Ft.</button>
+                        <button class="unit-btn" onclick="setUnit('sqm')">Sq. M</button>
+                    </div>
+                    <input type="number" id="area" placeholder="Enter area" min="100" value="5000" oninput="calculateCost()">
+                </div>
+
+                <div class="form-group">
+                    <label class="label-with-tooltip">
+                        Number of Floors
+                        <span class="tooltip" data-tooltip="Total number of stories in the building">?</span>
+                    </label>
+                    <input type="number" id="floors" placeholder="Enter number of floors" min="1" value="5" oninput="calculateCost()">
+                </div>
+
+                <div class="form-group">
+                    <label class="label-with-tooltip">
+                        Location
+                        <span class="tooltip" data-tooltip="Geographic location affects labor and material costs">?</span>
+                    </label>
+                    <select id="location" onchange="calculateCost()">
+                        <option value="mumbai">Mumbai</option>
+                        <option value="delhi">Delhi</option>
+                        <option value="bangalore">Bangalore</option>
+                        <option value="pune">Pune</option>
+                        <option value="hyderabad">Hyderabad</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="label-with-tooltip">
+                        Quality of Materials
+                        <span class="tooltip" data-tooltip="Choose material grade and finish quality">?</span>
+                    </label>
+                    <div class="quality-selector">
+                        <button class="quality-btn active" onclick="setQuality('standard')">Standard</button>
+                        <button class="quality-btn" onclick="setQuality('premium')">Premium</button>
+                        <button class="quality-btn" onclick="setQuality('luxury')">Luxury</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="label-with-tooltip">
+                        Custom Labor Cost (Optional)
+                        <span class="tooltip" data-tooltip="Leave blank to use default. Enter as ₹ per sq. ft">?</span>
+                    </label>
+                    <input type="number" id="customLabor" placeholder="Leave blank for default" oninput="calculateCost()">
+                </div>
+
+                <div class="form-group">
+                    <label class="label-with-tooltip">
+                        Material Cost Adjustment Factor
+                        <span class="tooltip" data-tooltip="Adjust material costs (1.0 = no change, 1.2 = 20% increase)">?</span>
+                    </label>
+                    <input type="number" id="materialFactor" placeholder="Default: 1.0" min="0.5" max="2.0" step="0.1" value="1.0" oninput="calculateCost()">
+                </div>
+
+                <button class="submit-btn" onclick="calculateCost()">Calculate Estimate</button>
+            </div>
+
+            <!-- Cost Summary Section -->
+            <div class="card">
+                <h2>Cost Breakdown</h2>
+                
+                <div class="cost-summary">
+                    <div class="cost-item">
+                        <span class="cost-label">Base Rate:</span>
+                        <span class="cost-value" id="baseRateDisplay">₹0</span>
+                    </div>
+                    <div class="cost-item">
+                        <span class="cost-label">Material Cost:</span>
+                        <span class="cost-value" id="materialCost">₹0</span>
+                    </div>
+                    <div class="cost-item">
+                        <span class="cost-label">Labor Cost:</span>
+                        <span class="cost-value" id="laborCost">₹0</span>
+                    </div>
+                    <div class="cost-item">
+                        <span class="cost-label">Finishing & Fittings:</span>
+                        <span class="cost-value" id="finishingCost">₹0</span>
+                    </div>
+                    <div class="cost-item">
+                        <span class="cost-label">Contingency (5%):</span>
+                        <span class="cost-value" id="contingency">₹0</span>
+                    </div>
+                </div>
+
+                <div class="total-cost">
+                    <div class="total-cost-label">Estimated Total Cost</div>
+                    <div class="total-cost-value" id="totalCost">₹0</div>
+                </div>
+
+                <button class="pdf-btn" onclick="generatePDF()">📥 Generate PDF Estimate</button>
+            </div>
+        </div>
+
+        <!-- Information Section -->
+        <div class="info-section">
+            <h2>About Type 2 Buildings</h2>
+            <p>Type 2 buildings are reinforced concrete (RCC) framed structures, one of the most common construction types in India. These buildings feature a structural skeleton of concrete beams and columns with infill walls, offering excellent strength, durability, and flexibility in design.</p>
+            
+            <h3 style="color: #2c3e50; margin-top: 20px; margin-bottom: 10px;">Key Characteristics:</h3>
+            <ul class="info-list">
+                <li><strong>Structure:</strong> Reinforced concrete frame with brick or block masonry infill walls</li>
+                <li><strong>Load Bearing:</strong> Primarily frame-based, allowing for large column-free spaces</li>
+                <li><strong>Fire Resistance:</strong> Excellent fire resistance due to concrete construction</li>
+                <li><strong>Common Use:</strong> Residential complexes, office buildings, commercial spaces, and educational institutions</li>
+                <li><strong>Durability:</strong> 50-100 years with proper maintenance</li>
+                <li><strong>Cost Efficiency:</strong> Moderate construction cost with good quality assurance</li>
+            </ul>
+
+            <h3 style="color: #2c3e50; margin-top: 20px; margin-bottom: 10px;">Cost Estimation Factors:</h3>
+            <ul class="info-list">
+                <li><strong>Quality Grades:</strong> Standard (basic finishes), Premium (enhanced finishes), Luxury (high-end materials and finishes)</li>
+                <li><strong>Location Impact:</strong> Urban centers have higher labor and material costs compared to tier-2 or tier-3 cities</li>
+                <li><strong>Floor Count:</strong> Multi-story buildings benefit from economies of scale, reducing per-unit costs</li>
+                <li><strong>Material Adjustment:</strong> Market fluctuations in steel, cement, and other materials affect final costs</li>
+            </ul>
+
+            <p style="margin-top: 20px; font-style: italic; color: #7f8c8d;">Note: This estimator provides approximate costs based on industry averages. Actual costs may vary based on site conditions, design complexity, and local market conditions. Consult with professionals for accurate project budgeting.</p>
+        </div>
+
+        <footer>
+            <p>&copy; 2025 Type 2 Building Cost Estimator | All calculations are indicative and subject to change</p>
+        </footer>
+    </div>
+
+    <script>
+        // Configuration constants
+        const BASE_RATES = {
+            standard: 1200,
+            premium: 1800,
+            luxury: 2500
+        };
+
+        const LOCATION_FACTORS = {
+            mumbai: 1.35,
+            delhi: 1.30,
+            bangalore: 1.25,
+            pune: 1.15,
+            hyderabad: 1.10
+        };
+
+        const DEFAULT_LABOR_COST = 400; // per sq. ft
+
+        // State management
+        let currentUnit = 'sqft';
+        let currentQuality = 'standard';
+
+        function setUnit(unit) {
+            currentUnit = unit;
+            document.querySelectorAll('.unit-btn').forEach((btn, i) => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            calculateCost();
+        }
+
+        function setQuality(quality) {
+            currentQuality = quality;
+            document.querySelectorAll('.quality-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            calculateCost();
+        }
+
+        function convertArea(areaValue, fromUnit) {
+            if (fromUnit === 'sqm') {
+                return areaValue * 10.764; // convert sq.m to sq.ft
+            }
+            return areaValue;
+        }
+
+        function calculateCost() {
+            // Get input values
+            const areaInput = parseFloat(document.getElementById('area').value) || 0;
+            const floors = parseInt(document.getElementById('floors').value) || 1;
+            const location = document.getElementById('location').value;
+            const customLabor = document.getElementById('customLabor').value ? parseFloat(document.getElementById('customLabor').value) : null;
+            const materialFactor = parseFloat(document.getElementById('materialFactor').value) || 1.0;
+
+            // Convert area to sq.ft if needed
+            const areaSqFt = convertArea(areaInput, currentUnit);
+
+            // Get base rate and factors
+            const baseRate = BASE_RATES[currentQuality];
+            const locationFactor = LOCATION_FACTORS[location];
+            const floorFactor = 1 - (Math.min(floors - 1, 10) * 0.02); // Slight economy of scale
+
+            // Calculate adjusted base rate
+            const adjustedBaseRate = baseRate * locationFactor * floorFactor * materialFactor;
+
+            // Calculate costs
+            const materialCost = (areaSqFt * adjustedBaseRate * 0.55);
+            const laborRate = customLabor || DEFAULT_LABOR_COST;
+            const laborCostTotal = (areaSqFt * laborRate);
+            const finishingCost = (areaSqFt * adjustedBaseRate * 0.25);
+            
+            const subtotal = materialCost + laborCostTotal + finishingCost;
+            const contingency = subtotal * 0.05;
+            const totalCost = subtotal + contingency;
+
+            // Update display
+            document.getElementById('baseRateDisplay').textContent = `₹${adjustedBaseRate.toFixed(0)}`;
+            document.getElementById('materialCost').textContent = `₹${materialCost.toLocaleString('en-IN', {maximumFractionDigits: 0})}`;
+            document.getElementById('laborCost').textContent = `₹${laborCostTotal.toLocaleString('en-IN', {maximumFractionDigits: 0})}`;
+            document.getElementById('finishingCost').textContent = `₹${finishingCost.toLocaleString('en-IN', {maximumFractionDigits: 0})}`;
+            document.getElementById('contingency').textContent = `₹${contingency.toLocaleString('en-IN', {maximumFractionDigits: 0})}`;
+            document.getElementById('totalCost').textContent = `₹${totalCost.toLocaleString('en-IN', {maximumFractionDigits: 0})}`;
+        }
+
+        function generatePDF() {
+            const area = document.getElementById('area').value;
+            const floors = document.getElementById('floors').value;
+            const location = document.getElementById('location').value;
+            const quality = currentQuality.charAt(0).toUpperCase() + currentQuality.slice(1);
+            const totalCost = document.getElementById('totalCost').textContent;
+            const materialCost = document.getElementById('materialCost').textContent;
+            const laborCost = document.getElementById('laborCost').textContent;
+            const finishingCost = document.getElementById('finishingCost').textContent;
+
+            const estimateText = `
+Type 2 Building Cost Estimate
+================================
+Date: ${new Date().toLocaleDateString()}
+
+Project Parameters:
+- Built-up Area: ${area} ${currentUnit === 'sqft' ? 'sq. ft' : 'sq. m'}
+- Number of Floors: ${floors}
+- Location: ${location.charAt(0).toUpperCase() + location.slice(1)}
+- Material Quality: ${quality}
+
+Cost Breakdown:
+- Material Cost: ${materialCost}
+- Labor Cost: ${laborCost}
+- Finishing & Fittings: ${finishingCost}
+
+Total Estimated Cost: ${totalCost}
+
+Note: This is an indicative estimate. Actual costs may vary.
+            `;
+
+            alert('📋 PDF Generation Feature\n\n' + estimateText + '\n(PDF download functionality would be implemented with a backend service)');
+        }
+
+        // Calculate on page load
+        window.addEventListener('load', calculateCost);
+    </script>
+</body>
+</html>
