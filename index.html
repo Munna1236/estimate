@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Type 2 Building Cost Estimator</title>
+    <title>Type 2 Building Cost & Materials Estimator</title>
     <style>
         * {
             margin: 0;
@@ -16,10 +16,11 @@
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             min-height: 100vh;
             padding: 20px;
+            color: #2c3e50;
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
         }
 
@@ -27,30 +28,34 @@
             text-align: center;
             margin-bottom: 40px;
             color: #2c3e50;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         header h1 {
-            font-size: 2.5em;
+            font-size: 2.2em;
             margin-bottom: 10px;
             font-weight: 600;
         }
 
         header p {
-            font-size: 1.1em;
-            color: #555;
+            font-size: 1em;
+            color: #7f8c8d;
         }
 
-        .content-wrapper {
+        .content-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 40px;
+            gap: 25px;
+            margin-bottom: 30px;
         }
 
         .card {
             background: white;
             border-radius: 12px;
-            padding: 30px;
+            padding: 25px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
@@ -61,15 +66,26 @@
         }
 
         .card h2 {
-            font-size: 1.5em;
+            font-size: 1.4em;
             color: #2c3e50;
             margin-bottom: 20px;
             border-bottom: 3px solid #3498db;
             padding-bottom: 10px;
         }
 
+        .card h3 {
+            font-size: 1.1em;
+            color: #2c3e50;
+            margin-top: 20px;
+            margin-bottom: 15px;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
 
         label {
@@ -80,15 +96,14 @@
             font-size: 0.95em;
         }
 
-        .label-with-tooltip {
+        .label-wrapper {
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        .tooltip {
+        .tooltip-icon {
             position: relative;
-            cursor: help;
             width: 18px;
             height: 18px;
             background: #3498db;
@@ -99,17 +114,18 @@
             justify-content: center;
             font-size: 0.75em;
             font-weight: bold;
+            cursor: help;
         }
 
-        .tooltip:hover::after {
+        .tooltip-icon:hover::after {
             content: attr(data-tooltip);
             position: absolute;
             bottom: 125%;
-            left: -50%;
-            width: 200px;
+            left: -80px;
+            width: 220px;
             background: #2c3e50;
             color: white;
-            padding: 10px;
+            padding: 12px;
             border-radius: 6px;
             font-size: 0.85em;
             font-weight: normal;
@@ -118,7 +134,7 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         }
 
-        input, select {
+        input, select, textarea {
             width: 100%;
             padding: 12px;
             border: 2px solid #ecf0f1;
@@ -128,19 +144,19 @@
             font-family: inherit;
         }
 
-        input:focus, select:focus {
+        input:focus, select:focus, textarea:focus {
             outline: none;
             border-color: #3498db;
             background-color: #f8fbff;
         }
 
-        .unit-selector {
+        .button-group {
             display: flex;
             gap: 10px;
             margin-bottom: 15px;
         }
 
-        .unit-btn {
+        .btn-toggle {
             flex: 1;
             padding: 10px;
             border: 2px solid #ecf0f1;
@@ -152,15 +168,19 @@
             color: #2c3e50;
         }
 
-        .unit-btn.active {
+        .btn-toggle.active {
             background: #3498db;
             color: white;
             border-color: #3498db;
         }
 
+        .btn-toggle:hover {
+            border-color: #3498db;
+        }
+
         .quality-selector {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-columns: repeat(3, 1fr);
             gap: 10px;
             margin-top: 10px;
         }
@@ -187,7 +207,28 @@
             border-color: #3498db;
         }
 
-        button.submit-btn {
+        .range-slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #ecf0f1;
+            outline: none;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .range-value {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: 600;
+            margin-left: 10px;
+            font-size: 0.9em;
+        }
+
+        .btn-primary {
             width: 100%;
             padding: 14px;
             background: linear-gradient(135deg, #3498db, #2980b9);
@@ -200,97 +241,184 @@
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
-        button.submit-btn:hover {
+        .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
         }
 
-        button.submit-btn:active {
-            transform: translateY(0);
+        .btn-secondary {
+            padding: 12px 20px;
+            background: #95a5a6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s ease;
         }
 
-        .cost-summary {
+        .btn-secondary:hover {
+            background: #7f8c8d;
+            transform: translateY(-2px);
+        }
+
+        .btn-group-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .btn-group-actions button {
+            flex: 1;
+        }
+
+        .summary-section {
             background: linear-gradient(135deg, #ecf0f1 0%, #bdc3c7 100%);
             padding: 20px;
             border-radius: 8px;
             margin-bottom: 20px;
         }
 
-        .cost-item {
+        .summary-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 15px;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.5);
         }
 
-        .cost-item:last-child {
+        .summary-item:last-child {
             border-bottom: none;
             margin-bottom: 0;
             padding-bottom: 0;
         }
 
-        .cost-label {
+        .summary-label {
             color: #2c3e50;
             font-weight: 500;
         }
 
-        .cost-value {
-            font-size: 1.15em;
+        .summary-value {
+            font-size: 1.1em;
             font-weight: 600;
             color: #2c3e50;
         }
 
-        .total-cost {
+        .total-box {
             background: white;
             padding: 20px;
             border-radius: 8px;
             text-align: center;
             border: 3px solid #3498db;
+            margin-bottom: 15px;
         }
 
-        .total-cost-label {
+        .total-label {
             color: #555;
-            font-size: 1em;
+            font-size: 0.95em;
             margin-bottom: 8px;
         }
 
-        .total-cost-value {
-            font-size: 2.2em;
+        .total-value {
+            font-size: 2em;
             color: #27ae60;
             font-weight: bold;
         }
 
-        .pdf-btn {
+        .materials-table {
             width: 100%;
+            border-collapse: collapse;
             margin-top: 15px;
-            padding: 12px;
-            background: #27ae60;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 1em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
-        .pdf-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(39, 174, 96, 0.4);
+        .materials-table th {
+            background: #3498db;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .materials-table td {
+            padding: 12px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .materials-table tr:hover {
+            background: #f8fbff;
+        }
+
+        .collapsible-section {
+            margin-top: 20px;
+        }
+
+        .collapsible-header {
+            background: #3498db;
+            color: white;
+            padding: 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            user-select: none;
+            transition: background 0.3s ease;
+        }
+
+        .collapsible-header:hover {
+            background: #2980b9;
+        }
+
+        .collapsible-content {
+            background: #f8fbff;
+            padding: 15px;
+            border-radius: 0 0 6px 6px;
+            margin-top: -1px;
+            display: none;
+            border: 1px solid #3498db;
+            border-top: none;
+        }
+
+        .collapsible-content.active {
+            display: block;
+        }
+
+        .formula-box {
+            background: #ecf0f1;
+            padding: 15px;
+            border-left: 4px solid #3498db;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+
+        .assumptions-list {
+            background: #f8fbff;
+            padding: 15px;
+            border-left: 4px solid #27ae60;
+            border-radius: 4px;
+            margin-top: 15px;
+        }
+
+        .assumptions-list li {
+            margin: 8px 0;
+            color: #2c3e50;
         }
 
         .info-section {
             background: white;
             border-radius: 12px;
-            padding: 30px;
+            padding: 25px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            margin-bottom: 40px;
+            margin-bottom: 30px;
         }
 
         .info-section h2 {
-            font-size: 1.5em;
+            font-size: 1.4em;
             color: #2c3e50;
             margin-bottom: 20px;
             border-bottom: 3px solid #3498db;
@@ -305,7 +433,7 @@
 
         .info-list {
             margin: 15px 0;
-            padding-left: 20px;
+            padding-left: 25px;
         }
 
         .info-list li {
@@ -314,89 +442,181 @@
             line-height: 1.6;
         }
 
+        .disclaimer {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            color: #856404;
+        }
+
         footer {
             text-align: center;
             color: #555;
             font-size: 0.9em;
             margin-top: 40px;
+            padding: 20px;
+        }
+
+        .worked-example {
+            background: linear-gradient(135deg, #e8f4f8 0%, #d4e8f0 100%);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 4px solid #3498db;
+        }
+
+        .worked-example strong {
+            color: #2c3e50;
         }
 
         @media (max-width: 768px) {
-            .content-wrapper {
+            .content-grid {
                 grid-template-columns: 1fr;
             }
 
             header h1 {
-                font-size: 1.8em;
+                font-size: 1.6em;
             }
 
             .quality-selector {
                 grid-template-columns: 1fr;
             }
 
-            .total-cost-value {
-                font-size: 1.8em;
+            .total-value {
+                font-size: 1.5em;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .materials-table {
+                font-size: 0.9em;
+            }
+
+            .materials-table th, .materials-table td {
+                padding: 8px;
             }
         }
 
-        .placeholder-message {
-            text-align: center;
-            color: #95a5a6;
-            padding: 30px;
-            font-style: italic;
+        .highlight-warning {
+            border: 2px solid #e74c3c;
+            background: #fadbd8;
+        }
+
+        .validation-error {
+            color: #e74c3c;
+            font-size: 0.85em;
+            margin-top: 5px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Type 2 Building Cost Estimator</h1>
-            <p>Calculate reinforced concrete framed structure construction costs instantly</p>
+            <h1>🏗️ Type 2 Building Cost & Materials Estimator</h1>
+            <p>India-focused RCC framed structure estimation with material quantities</p>
         </header>
 
-        <div class="content-wrapper">
-            <!-- Input Form Section -->
+        <div class="content-grid">
+            <!-- INPUT FORM SECTION -->
             <div class="card">
-                <h2>Project Parameters</h2>
-                
+                <h2>Project Inputs</h2>
+
+                <!-- Area & Geometry -->
+                <h3>Area & Geometry</h3>
                 <div class="form-group">
-                    <label class="label-with-tooltip">
+                    <label class="label-wrapper">
                         Built-up Area
-                        <span class="tooltip" data-tooltip="The total enclosed floor area of the building">?</span>
+                        <span class="tooltip-icon" data-tooltip="Total covered floor area of the building">?</span>
                     </label>
-                    <div class="unit-selector">
-                        <button class="unit-btn active" onclick="setUnit('sqft')">Sq. Ft.</button>
-                        <button class="unit-btn" onclick="setUnit('sqm')">Sq. M</button>
+                    <div class="button-group">
+                        <button class="btn-toggle active" onclick="setUnit('sqft')">Sq. Ft</button>
+                        <button class="btn-toggle" onclick="setUnit('sqm')">Sq. M</button>
                     </div>
-                    <input type="number" id="area" placeholder="Enter area" min="100" value="5000" oninput="calculateCost()">
+                    <input type="number" id="area" placeholder="Enter area" min="100" value="5000" oninput="calculate()">
                 </div>
 
                 <div class="form-group">
-                    <label class="label-with-tooltip">
+                    <label class="label-wrapper">
                         Number of Floors
-                        <span class="tooltip" data-tooltip="Total number of stories in the building">?</span>
+                        <span class="tooltip-icon" data-tooltip="Total storeys including basement if any">?</span>
                     </label>
-                    <input type="number" id="floors" placeholder="Enter number of floors" min="1" value="5" oninput="calculateCost()">
+                    <input type="number" id="floors" placeholder="Enter floors" min="1" max="50" value="2" oninput="calculate()">
                 </div>
 
                 <div class="form-group">
-                    <label class="label-with-tooltip">
-                        Location
-                        <span class="tooltip" data-tooltip="Geographic location affects labor and material costs">?</span>
+                    <label class="label-wrapper">
+                        Wall Thickness for Bricks
+                        <span class="tooltip-icon" data-tooltip="9-inch (230mm) is standard; 4.5-inch for partitions">?</span>
                     </label>
-                    <select id="location" onchange="calculateCost()">
-                        <option value="mumbai">Mumbai</option>
-                        <option value="delhi">Delhi</option>
-                        <option value="bangalore">Bangalore</option>
-                        <option value="pune">Pune</option>
-                        <option value="hyderabad">Hyderabad</option>
+                    <div class="button-group">
+                        <button class="btn-toggle active" onclick="setWallThickness('9inch')">9-inch (230mm)</button>
+                        <button class="btn-toggle" onclick="setWallThickness('4.5inch')">4.5-inch (115mm)</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="label-wrapper">
+                        Plaster Thickness (mm)
+                        <span class="tooltip-icon" data-tooltip="Plaster thickness adds to wall volume overrun. Default 12mm">?</span>
+                    </label>
+                    <input type="number" id="plasterThickness" placeholder="12" min="0" max="50" value="12" oninput="calculate()">
+                </div>
+
+                <!-- Location & Quality -->
+                <h3>Location & Quality</h3>
+                <div class="form-group">
+                    <label class="label-wrapper">
+                        State / Union Territory
+                        <span class="tooltip-icon" data-tooltip="Location affects labor & material costs significantly">?</span>
+                    </label>
+                    <select id="location" onchange="calculate()">
+                        <option value="ap">Andhra Pradesh (1.12)</option>
+                        <option value="ar">Arunachal Pradesh (1.18)</option>
+                        <option value="as">Assam (1.05)</option>
+                        <option value="br">Bihar (0.98)</option>
+                        <option value="cg">Chhattisgarh (0.95)</option>
+                        <option value="ga">Goa (1.15)</option>
+                        <option value="gj">Gujarat (1.08)</option>
+                        <option value="hr">Haryana (1.15)</option>
+                        <option value="hp">Himachal Pradesh (1.10)</option>
+                        <option value="jk">Jharkhand (1.00)</option>
+                        <option value="ka">Karnataka (1.13)</option>
+                        <option value="kl">Kerala (1.20)</option>
+                        <option value="mp">Madhya Pradesh (0.96)</option>
+                        <option value="mh">Maharashtra (1.18)</option>
+                        <option value="mn">Manipur (1.10)</option>
+                        <option value="mg">Meghalaya (1.12)</option>
+                        <option value="mz">Mizoram (1.15)</option>
+                        <option value="nl">Nagaland (1.12)</option>
+                        <option value="od">Odisha (0.99)</option>
+                        <option value="pb">Punjab (1.10)</option>
+                        <option value="rj">Rajasthan (1.02)</option>
+                        <option value="sk">Sikkim (1.16)</option>
+                        <option value="tn">Tamil Nadu (1.14)</option>
+                        <option value="tg">Telangana (1.11)</option>
+                        <option value="tr">Tripura (1.08)</option>
+                        <option value="up">Uttar Pradesh (1.05)</option>
+                        <option value="uk" selected>Uttarakhand (1.09)</option>
+                        <option value="wb">West Bengal (1.07)</option>
+                        <option value="an">Andaman & Nicobar (1.25)</option>
+                        <option value="ch">Chandigarh (1.12)</option>
+                        <option value="dd">Dadra & Nagar Haveli (1.08)</option>
+                        <option value="dl">Delhi (1.20)</option>
+                        <option value="jm">Jammu & Kashmir (1.14)</option>
+                        <option value="ld">Ladakh (1.22)</option>
+                        <option value="lh">Lakshadweep (1.28)</option>
+                        <option value="py">Puducherry (1.13)</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label class="label-with-tooltip">
-                        Quality of Materials
-                        <span class="tooltip" data-tooltip="Choose material grade and finish quality">?</span>
+                    <label class="label-wrapper">
+                        Quality Grade
+                        <span class="tooltip-icon" data-tooltip="Standard: basic finishes. Premium: enhanced. Luxury: high-end">?</span>
                     </label>
                     <div class="quality-selector">
                         <button class="quality-btn active" onclick="setQuality('standard')">Standard</button>
@@ -405,213 +625,598 @@
                     </div>
                 </div>
 
+                <!-- Concrete & Materials -->
+                <h3>Concrete & Materials</h3>
                 <div class="form-group">
-                    <label class="label-with-tooltip">
-                        Custom Labor Cost (Optional)
-                        <span class="tooltip" data-tooltip="Leave blank to use default. Enter as ₹ per sq. ft">?</span>
+                    <label class="label-wrapper">
+                        Concrete Grade
+                        <span class="tooltip-icon" data-tooltip="M20 (1:1.5:3) or M25 (1:1:2). Affects material proportions">?</span>
                     </label>
-                    <input type="number" id="customLabor" placeholder="Leave blank for default" oninput="calculateCost()">
+                    <div class="button-group">
+                        <button class="btn-toggle active" onclick="setConcreteGrade('M20')">M20</button>
+                        <button class="btn-toggle" onclick="setConcreteGrade('M25')">M25</button>
+                    </div>
                 </div>
 
                 <div class="form-group">
-                    <label class="label-with-tooltip">
-                        Material Cost Adjustment Factor
-                        <span class="tooltip" data-tooltip="Adjust material costs (1.0 = no change, 1.2 = 20% increase)">?</span>
+                    <label class="label-wrapper">
+                        Slab Thickness (mm)
+                        <span class="tooltip-icon" data-tooltip="Typical: 100-150mm. Affects concrete volume">?</span>
                     </label>
-                    <input type="number" id="materialFactor" placeholder="Default: 1.0" min="0.5" max="2.0" step="0.1" value="1.0" oninput="calculateCost()">
+                    <input type="range" class="range-slider" id="slabThickness" min="100" max="200" value="125" oninput="updateSlabDisplay(); calculate()">
+                    <span class="range-value" id="slabDisplay">125 mm</span>
                 </div>
 
-                <button class="submit-btn" onclick="calculateCost()">Calculate Estimate</button>
+                <div class="form-group">
+                    <label class="label-wrapper">
+                        Steel Estimation Mode
+                        <span class="tooltip-icon" data-tooltip="Per sq ft or per m³ of concrete">?</span>
+                    </label>
+                    <div class="button-group">
+                        <button class="btn-toggle active" onclick="setSteelMode('sqft')">Per Sq.Ft</button>
+                        <button class="btn-toggle" onclick="setSteelMode('m3')">Per m³ Concrete</button>
+                    </div>
+                </div>
+
+                <div class="btn-group-actions">
+                    <button class="btn-primary" onclick="calculate()">📊 Calculate Estimate</button>
+                    <button class="btn-secondary" onclick="resetForm()">🔄 Reset</button>
+                </div>
             </div>
 
-            <!-- Cost Summary Section -->
+            <!-- COST SUMMARY SECTION -->
             <div class="card">
-                <h2>Cost Breakdown</h2>
-                
-                <div class="cost-summary">
-                    <div class="cost-item">
-                        <span class="cost-label">Base Rate:</span>
-                        <span class="cost-value" id="baseRateDisplay">₹0</span>
+                <h2>Cost Summary</h2>
+
+                <div class="summary-section">
+                    <div class="summary-item">
+                        <span class="summary-label">Base Rate (per sq ft):</span>
+                        <span class="summary-value" id="baseRateDisplay">₹0</span>
                     </div>
-                    <div class="cost-item">
-                        <span class="cost-label">Material Cost:</span>
-                        <span class="cost-value" id="materialCost">₹0</span>
+                    <div class="summary-item">
+                        <span class="summary-label">Quality Factor:</span>
+                        <span class="summary-value" id="qualityFactorDisplay">1.00x</span>
                     </div>
-                    <div class="cost-item">
-                        <span class="cost-label">Labor Cost:</span>
-                        <span class="cost-value" id="laborCost">₹0</span>
-                    </div>
-                    <div class="cost-item">
-                        <span class="cost-label">Finishing & Fittings:</span>
-                        <span class="cost-value" id="finishingCost">₹0</span>
-                    </div>
-                    <div class="cost-item">
-                        <span class="cost-label">Contingency (5%):</span>
-                        <span class="cost-value" id="contingency">₹0</span>
+                    <div class="summary-item">
+                        <span class="summary-label">Location Factor:</span>
+                        <span class="summary-value" id="locationFactorDisplay">1.00x</span>
                     </div>
                 </div>
 
-                <div class="total-cost">
-                    <div class="total-cost-label">Estimated Total Cost</div>
-                    <div class="total-cost-value" id="totalCost">₹0</div>
+                <div class="total-box">
+                    <div class="total-label">Total Estimated Cost</div>
+                    <div class="total-value" id="totalCost">₹0</div>
                 </div>
 
-                <button class="pdf-btn" onclick="generatePDF()">📥 Generate PDF Estimate</button>
+                <table class="materials-table">
+                    <thead>
+                        <tr>
+                            <th>Cost Component</th>
+                            <th>Amount (₹)</th>
+                            <th>%</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Materials</td>
+                            <td id="materialsCost">₹0</td>
+                            <td id="materialsPercent">0%</td>
+                        </tr>
+                        <tr>
+                            <td>Labor</td>
+                            <td id="laborCost">₹0</td>
+                            <td id="laborPercent">0%</td>
+                        </tr>
+                        <tr>
+                            <td>Finishing & Fittings</td>
+                            <td id="finishingCost">₹0</td>
+                            <td id="finishingPercent">0%</td>
+                        </tr>
+                        <tr>
+                            <td>Contingency (5%)</td>
+                            <td id="contingencyCost">₹0</td>
+                            <td>5%</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="btn-group-actions">
+                    <button class="btn-secondary" onclick="generatePDF()">📥 PDF Estimate</button>
+                    <button class="btn-secondary" onclick="copyToClipboard()">📋 Copy Summary</button>
+                </div>
+            </div>
+
+            <!-- MATERIALS QUANTITIES SECTION -->
+            <div class="card full-width">
+                <h2>Material Quantities</h2>
+
+                <table class="materials-table">
+                    <thead>
+                        <tr>
+                            <th>Material</th>
+                            <th>Quantity</th>
+                            <th>Unit</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Bricks</strong></td>
+                            <td id="brickQty">0</td>
+                            <td>No.</td>
+                            <td><span id="brickNote"></span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Cement</strong></td>
+                            <td id="cementQty">0</td>
+                            <td>Bags (50kg)</td>
+                            <td><span id="cementNote"></span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Sand</strong></td>
+                            <td id="sandQty">0</td>
+                            <td>m³</td>
+                            <td><span id="sandNote"></span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Aggregate (20mm)</strong></td>
+                            <td id="aggQty">0</td>
+                            <td>m³</td>
+                            <td><span id="aggNote"></span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Steel (TMT)</strong></td>
+                            <td id="steelQty">0</td>
+                            <td>kg</td>
+                            <td><span id="steelNote"></span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Water</strong></td>
+                            <td id="waterQty">0</td>
+                            <td>Litres</td>
+                            <td><span id="waterNote"></span></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="collapsible-section">
+                    <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                        📐 How It's Calculated
+                        <span>▼</span>
+                    </div>
+                    <div class="collapsible-content">
+                        <h4 style="margin-bottom: 12px; color: #2c3e50;">Brick Calculation:</h4>
+                        <div class="formula-box">
+Bricks = (Built-up Area × Wall-to-Floor Ratio × Bricks per sq ft of wall) + Wastage%<br>
+Thumb rule: ~15-18 bricks/sq ft for 9-inch wall; ~7-9 for 4.5-inch wall
+                        </div>
+
+                        <h4 style="margin-bottom: 12px; color: #2c3e50;">Concrete Materials (M20: 1:1.5:3):</h4>
+                        <div class="formula-box">
+Slab Volume = Built-up Area × Slab Thickness (mm→m)<br>
+Beam/Column Volume ≈ 15-20% of slab volume (default adder)<br>
+Total Wet Concrete = Slab + Beams/Columns<br>
+Cement = (Total Volume / 5.5) bags; Sand = (Volume × 1.5/4.5) m³; Agg = (Volume × 3/4.5) m³<br>
+Water (w/c ratio = 0.5): Cement Qty (kg) × 0.5 Litres
+                        </div>
+
+                        <h4 style="margin-bottom: 12px; color: #2c3e50;">Steel Estimation:</h4>
+                        <div class="formula-box">
+Mode 1 (Per sq ft): Steel = Built-up Area × Rate (kg/sq ft) × Wastage%<br>
+Mode 2 (Per m³): Steel = Concrete Volume × Rates by member type × Wastage%
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Information Section -->
+        <!-- ASSUMPTIONS & NOTES SECTION -->
         <div class="info-section">
-            <h2>About Type 2 Buildings</h2>
-            <p>Type 2 buildings are reinforced concrete (RCC) framed structures, one of the most common construction types in India. These buildings feature a structural skeleton of concrete beams and columns with infill walls, offering excellent strength, durability, and flexibility in design.</p>
+            <h2>📋 Assumptions & Notes</h2>
+            <div class="assumptions-list">
+                <ul style="list-style: none; padding: 0;">
+                    <li>✓ <strong>Brick Size:</strong> Indian modular 190×90×90 mm with 10-12 mm mortar joints</li>
+                    <li>✓ <strong>Slab Thickness:</strong> Default 125 mm; adjust as needed</li>
+                    <li>✓ <strong>Beam/Column Volume:</strong> Estimated as 15-20% adder to slab volume</li>
+                    <li>✓ <strong>Concrete Mix (M20):</strong> 1:1.5:3 ratio; cement 50 kg bags; dry-to-wet factor ~1.54</li>
+                    <li>✓ <strong>Steel per sq ft:</strong> Residential ~4.5 kg/sq ft; can be adjusted via custom input</li>
+                    <li>✓ <strong>Labor Factor:</strong> Included in cost breakdown as 30-35% of total</li>
+                    <li>✓ <strong>Finishing & Fittings:</strong> Plaster, paint, tiles, doors, windows ~25-30% of materials</li>
+                    <li>✓ <strong>Contingency:</strong> 5% buffer for unforeseen costs</li>
+                    <li>✓ <strong>Openings (Doors/Windows):</strong> Not modeled; manually adjust area or brick wastage if significant</li>
+                    <li>✓ <strong>Location Factors:</strong> Based on regional labor & material availability (0.95–1.28)</li>
+                </ul>
+            </div>
+
+            <div class="disclaimer">
+                <strong>⚠️ Important Disclaimer:</strong><br>
+                All results are <strong>indicative estimates based on thumb rules and nominal mixes</strong>. Actual quantities depend on structural design, foundation type, soil conditions, and site-specific factors. <strong>Always consult a qualified Structural Engineer and Quantity Surveyor before commencing work.</strong> These estimates are for budgeting and preliminary planning only.
+            </div>
+
+            <div class="worked-example">
+                <strong>Worked Example:</strong><br>
+                Built-up Area: 1000 sq ft | Floors: 2 | State: Uttarakhand | Quality: Standard | Slab: 125 mm | M20 Grade<br><br>
+                <strong>Expected Results:</strong><br>
+                • Total Cost: ₹25–30 lakhs (approx)<br>
+                • Bricks: ~60,000–70,000 (with 7% wastage)<br>
+                • Cement: ~350–400 bags<br>
+                • Sand: ~45–50 m³<br>
+                • Aggregate: ~90–100 m³<br>
+                • Steel: ~4.5–5.0 tonnes<br>
+                • Water: ~18,000–20,000 litres
+            </div>
+        </div>
+
+        <!-- ABOUT TYPE 2 BUILDINGS SECTION -->
+        <div class="info-section">
+            <h2>🏗️ About Type 2 Buildings (RCC Framed Structures)</h2>
             
-            <h3 style="color: #2c3e50; margin-top: 20px; margin-bottom: 10px;">Key Characteristics:</h3>
+            <h3>Definition & Characteristics</h3>
+            <p>Type 2 buildings are reinforced concrete (RCC) framed structures—the most prevalent construction type in modern India. The structural system consists of a concrete skeleton (beams, columns, slabs) with masonry infill walls, combining strength, flexibility, and economy.</p>
+
+            <h3>Structural System</h3>
             <ul class="info-list">
-                <li><strong>Structure:</strong> Reinforced concrete frame with brick or block masonry infill walls</li>
-                <li><strong>Load Bearing:</strong> Primarily frame-based, allowing for large column-free spaces</li>
-                <li><strong>Fire Resistance:</strong> Excellent fire resistance due to concrete construction</li>
-                <li><strong>Common Use:</strong> Residential complexes, office buildings, commercial spaces, and educational institutions</li>
-                <li><strong>Durability:</strong> 50-100 years with proper maintenance</li>
-                <li><strong>Cost Efficiency:</strong> Moderate construction cost with good quality assurance</li>
+                <li><strong>Load Path:</strong> Vertical loads from slabs → beams → columns → footings → soil</li>
+                <li><strong>Infill Walls:</strong> Typically 9-inch (230 mm) brick masonry or block walls between columns</li>
+                <li><strong>Connection:</strong> Monolithic (continuous) concrete frame with no expansion joints</li>
+                <li><strong>Floor Systems:</strong> One-way or two-way RCC slabs (100–150 mm thick)</li>
             </ul>
 
-            <h3 style="color: #2c3e50; margin-top: 20px; margin-bottom: 10px;">Cost Estimation Factors:</h3>
+            <h3>Advantages</h3>
             <ul class="info-list">
-                <li><strong>Quality Grades:</strong> Standard (basic finishes), Premium (enhanced finishes), Luxury (high-end materials and finishes)</li>
-                <li><strong>Location Impact:</strong> Urban centers have higher labor and material costs compared to tier-2 or tier-3 cities</li>
-                <li><strong>Floor Count:</strong> Multi-story buildings benefit from economies of scale, reducing per-unit costs</li>
-                <li><strong>Material Adjustment:</strong> Market fluctuations in steel, cement, and other materials affect final costs</li>
+                <li>✓ High structural strength and stiffness</li>
+                <li>✓ Good fire and weather resistance</li>
+                <li>✓ Flexible interior layouts with fewer columns</li>
+                <li>✓ Excellent for multi-story residential and commercial use</li>
+                <li>✓ Long design life (50–100 years)</li>
+                <li>✓ Moderate construction cost with good quality assurance</li>
             </ul>
 
-            <p style="margin-top: 20px; font-style: italic; color: #7f8c8d;">Note: This estimator provides approximate costs based on industry averages. Actual costs may vary based on site conditions, design complexity, and local market conditions. Consult with professionals for accurate project budgeting.</p>
+            <h3>Applications</h3>
+            <ul class="info-list">
+                <li>• Residential complexes (apartments, villas)</li>
+                <li>• Office and commercial buildings</li>
+                <li>• Schools, colleges, and institutional buildings</li>
+                <li>• Shopping malls and retail centers</li>
+                <li>• Hospitals and healthcare facilities</li>
+                <li>• Hotels and hospitality structures</li>
+            </ul>
+
+            <h3>Design Life & Durability</h3>
+            <p>Type 2 structures are designed for a service life of 50–100 years with proper maintenance. Durability depends on concrete grade, cover thickness, reinforcement quality, and environmental conditions. Coastal areas may require higher concrete grades (M25–M30) for salt resistance.</p>
+
+            <h3>Material Standards (India)</h3>
+            <ul class="info-list">
+                <li>• Concrete Grade: M20, M25, M30 (typical for RCC)</li>
+                <li>• Steel Reinforcement: TMT Fe500 or Fe500D (high-strength deformed bars)</li>
+                <li>• Bricks: Class A or B quality, 230×110×75 mm or 190×90×90 mm (modular)</li>
+                <li>• Cement: OPC 43-grade or PPC (Portland Pozzolana Cement)</li>
+                <li>• Sand: Machine-sand or river-sand, fineness modulus 2.75–3.00</li>
+                <li>• Aggregate: 20 mm nominal size, well-graded</li>
+            </ul>
+
+            <h3>Regulatory Compliance (India)</h3>
+            <p>Type 2 buildings must comply with <strong>Indian Standards (IS Codes):</strong></p>
+            <ul class="info-list">
+                <li>• IS 456:2000 – Code of Practice for Plain and Reinforced Concrete</li>
+                <li>• IS 1893:2016 – Earthquake Resistant Design and Construction</li>
+                <li>• IS 3956:2016 – Code of Practice for Brickwork and Blockwork</li>
+                <li>• NBC (National Building Code) – Fire safety, accessibility, ventilation</li>
+                <li>• Local Building Bye-laws – Floor space index (FSI), setbacks, height restrictions</li>
+            </ul>
         </div>
 
         <footer>
-            <p>&copy; 2025 Type 2 Building Cost Estimator | All calculations are indicative and subject to change</p>
+            <p>&copy; 2025 Type 2 Building Cost & Materials Estimator | India Edition<br>
+            For professional use, validate with structural engineers and quantity surveyors.</p>
         </footer>
     </div>
 
     <script>
-        // Configuration constants
+        // ========== CONFIGURATION CONSTANTS ==========
+
+        // Base rates per quality grade (₹ per sq ft)
         const BASE_RATES = {
             standard: 1200,
             premium: 1800,
             luxury: 2500
         };
 
-        const LOCATION_FACTORS = {
-            mumbai: 1.35,
-            delhi: 1.30,
-            bangalore: 1.25,
-            pune: 1.15,
-            hyderabad: 1.10
+        // Quality multipliers
+        const QUALITY_FACTORS = {
+            standard: 1.0,
+            premium: 1.35,
+            luxury: 1.75
         };
 
-        const DEFAULT_LABOR_COST = 400; // per sq. ft
+        // Location factors (all States/UTs)
+        const LOCATION_FACTORS = {
+            ap: 1.12, ar: 1.18, as: 1.05, br: 0.98, cg: 0.95, ga: 1.15, gj: 1.08, hr: 1.15,
+            hp: 1.10, jk: 1.00, ka: 1.13, kl: 1.20, mp: 0.96, mh: 1.18, mn: 1.10, mg: 1.12,
+            mz: 1.15, nl: 1.12, od: 0.99, pb: 1.10, rj: 1.02, sk: 1.16, tn: 1.14, tg: 1.11,
+            tr: 1.08, up: 1.05, uk: 1.09, wb: 1.07, an: 1.25, ch: 1.12, dd: 1.08, dl: 1.20,
+            jm: 1.14, ld: 1.22, lh: 1.28, py: 1.13
+        };
 
-        // State management
-        let currentUnit = 'sqft';
-        let currentQuality = 'standard';
+        // Concrete mix ratios (cement:sand:agg)
+        const CONCRETE_MIXES = {
+            M20: { cement: 1, sand: 1.5, agg: 3, bags_per_m3: 8.1 },
+            M25: { cement: 1, sand: 1, agg: 2, bags_per_m3: 9.5 }
+        };
 
-        function setUnit(unit) {
-            currentUnit = unit;
-            document.querySelectorAll('.unit-btn').forEach((btn, i) => {
-                btn.classList.remove('active');
+        // Steel rate per sq ft (kg)
+        const STEEL_PER_SQFT = {
+            residential: 4.5,
+            commercial: 5.25
+        };
+
+        // Steel per m³ of concrete by member type (kg)
+        const STEEL_PER_M3 = {
+            slab: 90,
+            beam: 110,
+            column: 135
+        };
+
+        // Brick calculations (thumb rules)
+        const BRICK_DATA = {
+            '9inch': 18,    // bricks per sq ft of wall
+            '4.5inch': 9
+        };
+
+        // Wall-to-floor ratio (estimated)
+        const WALL_TO_FLOOR_RATIO = 0.5; // 50% of floor area is walled
+
+        // ========== STATE MANAGEMENT ==========
+        let state = {
+            unit: 'sqft',
+            wallThickness: '9inch',
+            quality: 'standard',
+            concreteGrade: 'M20',
+            steelMode: 'sqft'
+        };
+
+        // ========== UTILITY FUNCTIONS ==========
+
+        function setUnit(u) {
+            state.unit = u;
+            document.querySelectorAll('.btn-toggle').forEach((b, i) => {
+                if (i < 2) b.classList.toggle('active');
             });
+            calculate();
+        }
+
+        function setWallThickness(t) {
+            state.wallThickness = t;
+            Array.from(document.querySelectorAll('.btn-toggle')).slice(2, 4).forEach(b => b.classList.remove('active'));
             event.target.classList.add('active');
-            calculateCost();
+            calculate();
         }
 
-        function setQuality(quality) {
-            currentQuality = quality;
-            document.querySelectorAll('.quality-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
+        function setQuality(q) {
+            state.quality = q;
+            document.querySelectorAll('.quality-btn').forEach(b => b.classList.remove('active'));
             event.target.classList.add('active');
-            calculateCost();
+            calculate();
         }
 
-        function convertArea(areaValue, fromUnit) {
-            if (fromUnit === 'sqm') {
-                return areaValue * 10.764; // convert sq.m to sq.ft
-            }
-            return areaValue;
+        function setConcreteGrade(g) {
+            state.concreteGrade = g;
+            Array.from(document.querySelectorAll('.btn-toggle')).slice(4, 6).forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            calculate();
         }
 
-        function calculateCost() {
+        function setSteelMode(m) {
+            state.steelMode = m;
+            Array.from(document.querySelectorAll('.btn-toggle')).slice(6, 8).forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            calculate();
+        }
+
+        function updateSlabDisplay() {
+            const val = document.getElementById('slabThickness').value;
+            document.getElementById('slabDisplay').textContent = val + ' mm';
+        }
+
+        function toggleCollapsible(header) {
+            const content = header.nextElementSibling;
+            content.classList.toggle('active');
+            header.style.borderRadius = content.classList.contains('active') ? '6px 6px 0 0' : '6px';
+        }
+
+        function formatCurrency(val) {
+            return '₹' + Math.round(val).toLocaleString('en-IN');
+        }
+
+        function formatNumber(val) {
+            return Math.round(val).toLocaleString('en-IN');
+        }
+
+        function convertArea(areaVal, fromUnit) {
+            return fromUnit === 'sqm' ? areaVal * 10.764 : areaVal;
+        }
+
+        // ========== MAIN CALCULATION FUNCTION ==========
+
+        function calculate() {
             // Get input values
             const areaInput = parseFloat(document.getElementById('area').value) || 0;
             const floors = parseInt(document.getElementById('floors').value) || 1;
+            const plaster = parseFloat(document.getElementById('plasterThickness').value) || 12;
             const location = document.getElementById('location').value;
-            const customLabor = document.getElementById('customLabor').value ? parseFloat(document.getElementById('customLabor').value) : null;
-            const materialFactor = parseFloat(document.getElementById('materialFactor').value) || 1.0;
+            const slabThick = parseFloat(document.getElementById('slabThickness').value) / 1000; // convert mm to m
 
-            // Convert area to sq.ft if needed
-            const areaSqFt = convertArea(areaInput, currentUnit);
+            // Default values (Advanced Options removed)
+            const customBase = null;
+            const steelRate = 75;
+            const wasteC = 5;
+            const wasteS = 6;
+            const wasteAgg = 6;
+            const wasteBr = 7;
+            const wasteStl = 3;
 
-            // Get base rate and factors
-            const baseRate = BASE_RATES[currentQuality];
-            const locationFactor = LOCATION_FACTORS[location];
-            const floorFactor = 1 - (Math.min(floors - 1, 10) * 0.02); // Slight economy of scale
+            // Convert area to sq ft
+            const areaSqFt = convertArea(areaInput, state.unit);
 
-            // Calculate adjusted base rate
-            const adjustedBaseRate = baseRate * locationFactor * floorFactor * materialFactor;
+            // Validate
+            if (areaSqFt <= 0 || floors <= 0) {
+                alert('Please enter valid area and floor count');
+                return;
+            }
 
-            // Calculate costs
-            const materialCost = (areaSqFt * adjustedBaseRate * 0.55);
-            const laborRate = customLabor || DEFAULT_LABOR_COST;
-            const laborCostTotal = (areaSqFt * laborRate);
-            const finishingCost = (areaSqFt * adjustedBaseRate * 0.25);
-            
-            const subtotal = materialCost + laborCostTotal + finishingCost;
-            const contingency = subtotal * 0.05;
-            const totalCost = subtotal + contingency;
+            // ========== COST CALCULATIONS ==========
+            const baseRate = customBase || BASE_RATES[state.quality];
+            const qualityFactor = QUALITY_FACTORS[state.quality];
+            const locationFactor = LOCATION_FACTORS[location] || 1.0;
+            const adjustedBaseRate = baseRate * qualityFactor * locationFactor;
 
-            // Update display
-            document.getElementById('baseRateDisplay').textContent = `₹${adjustedBaseRate.toFixed(0)}`;
-            document.getElementById('materialCost').textContent = `₹${materialCost.toLocaleString('en-IN', {maximumFractionDigits: 0})}`;
-            document.getElementById('laborCost').textContent = `₹${laborCostTotal.toLocaleString('en-IN', {maximumFractionDigits: 0})}`;
-            document.getElementById('finishingCost').textContent = `₹${finishingCost.toLocaleString('en-IN', {maximumFractionDigits: 0})}`;
-            document.getElementById('contingency').textContent = `₹${contingency.toLocaleString('en-IN', {maximumFractionDigits: 0})}`;
-            document.getElementById('totalCost').textContent = `₹${totalCost.toLocaleString('en-IN', {maximumFractionDigits: 0})}`;
+            // Cost components (as percentage splits)
+            const materialPercent = 0.40;
+            const laborPercent = 0.35;
+            const finishingPercent = 0.25;
+            const contingencyPercent = 0.05;
+
+            const totalPerSqFt = adjustedBaseRate;
+            const totalCost = totalPerSqFt * areaSqFt;
+            const materialsCost = totalCost * materialPercent;
+            const laborCost = totalCost * laborPercent;
+            const finishingCost = totalCost * finishingPercent;
+            const contingency = (materialsCost + laborCost + finishingCost) * contingencyPercent;
+
+            // ========== MATERIAL QUANTITY CALCULATIONS ==========
+
+            // 1. BRICKS
+            const wallArea = areaSqFt * WALL_TO_FLOOR_RATIO * floors; // total wall area across all floors
+            const bricksPerSqFt = BRICK_DATA[state.wallThickness];
+            const brickQtyBase = wallArea * bricksPerSqFt;
+            const brickQtyFinal = brickQtyBase * (1 + wasteBr / 100);
+
+            // 2. CONCRETE VOLUME
+            const slabVolume = (areaSqFt / 10.764) * slabThick * floors; // convert sqft to sqm, then volume
+            const beamColumnAdder = 0.18; // 18% additional volume for beams/columns
+            const concreteVolume = slabVolume * (1 + beamColumnAdder);
+
+            // 3. CONCRETE MIX MATERIALS (M20 or M25)
+            const mix = CONCRETE_MIXES[state.concreteGrade];
+            const cementBags = concreteVolume * mix.bags_per_m3 * (1 + wasteC / 100);
+            const sandVolume = (concreteVolume * mix.sand / (mix.cement + mix.sand + mix.agg)) * (1 + wasteS / 100);
+            const aggVolume = (concreteVolume * mix.agg / (mix.cement + mix.sand + mix.agg)) * (1 + wasteAgg / 100);
+            const waterQty = cementBags * 50 * 0.5 * 1000; // w/c ratio 0.5, cement in bags (50kg), result in litres
+
+            // 4. STEEL
+            let steelQty;
+            if (state.steelMode === 'sqft') {
+                steelQty = areaSqFt * STEEL_PER_SQFT.residential * (1 + wasteStl / 100);
+            } else {
+                const steelSlabs = slabVolume * STEEL_PER_M3.slab;
+                const steelBeams = slabVolume * 0.09 * STEEL_PER_M3.beam; // 9% beam volume
+                const steelColumns = slabVolume * 0.09 * STEEL_PER_M3.column; // 9% column volume
+                steelQty = (steelSlabs + steelBeams + steelColumns) * (1 + wasteStl / 100);
+            }
+
+            // ========== UPDATE DISPLAY ==========
+
+            // Cost summary
+            document.getElementById('baseRateDisplay').textContent = formatCurrency(adjustedBaseRate);
+            document.getElementById('qualityFactorDisplay').textContent = (qualityFactor).toFixed(2) + 'x';
+            document.getElementById('locationFactorDisplay').textContent = (locationFactor).toFixed(2) + 'x';
+            document.getElementById('totalCost').textContent = formatCurrency(totalCost + contingency);
+
+            document.getElementById('materialsCost').textContent = formatCurrency(materialsCost);
+            document.getElementById('materialsPercent').textContent = materialPercent * 100 + '%';
+            document.getElementById('laborCost').textContent = formatCurrency(laborCost);
+            document.getElementById('laborPercent').textContent = laborPercent * 100 + '%';
+            document.getElementById('finishingCost').textContent = formatCurrency(finishingCost);
+            document.getElementById('finishingPercent').textContent = finishingPercent * 100 + '%';
+            document.getElementById('contingencyCost').textContent = formatCurrency(contingency);
+
+            // Material quantities
+            document.getElementById('brickQty').textContent = formatNumber(brickQtyFinal);
+            document.getElementById('brickNote').textContent = `Wall area: ${formatNumber(wallArea)} sq ft`;
+
+            document.getElementById('cementQty').textContent = formatNumber(cementBags);
+            document.getElementById('cementNote').textContent = `(${formatNumber(cementBags * 50)} kg, ${state.concreteGrade})`;
+
+            document.getElementById('sandQty').textContent = sandVolume.toFixed(2);
+            document.getElementById('sandNote').textContent = 'Incl. mortar + waste';
+
+            document.getElementById('aggQty').textContent = aggVolume.toFixed(2);
+            document.getElementById('aggNote').textContent = '20mm nominal size';
+
+            document.getElementById('steelQty').textContent = formatNumber(steelQty);
+            document.getElementById('steelNote').textContent = `@ ₹${steelRate}/kg`;
+
+            document.getElementById('waterQty').textContent = formatNumber(waterQty);
+            document.getElementById('waterNote').textContent = `(w/c = 0.5)`;
+        }
+
+        function resetForm() {
+            document.getElementById('area').value = 5000;
+            document.getElementById('floors').value = 2;
+            document.getElementById('plasterThickness').value = 12;
+            document.getElementById('location').value = 'uk';
+            document.getElementById('slabThickness').value = 125;
+            state = { unit: 'sqft', wallThickness: '9inch', quality: 'standard', concreteGrade: 'M20', steelMode: 'sqft' };
+            updateSlabDisplay();
+            document.querySelectorAll('.btn-toggle').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.btn-toggle')[0].classList.add('active');
+            document.querySelectorAll('.btn-toggle')[2].classList.add('active');
+            document.querySelectorAll('.btn-toggle')[4].classList.add('active');
+            document.querySelectorAll('.btn-toggle')[6].classList.add('active');
+            document.querySelectorAll('.quality-btn')[0].classList.add('active');
+            document.querySelectorAll('.quality-btn').slice(1).forEach(b => b.classList.remove('active'));
+            calculate();
         }
 
         function generatePDF() {
-            const area = document.getElementById('area').value;
-            const floors = document.getElementById('floors').value;
-            const location = document.getElementById('location').value;
-            const quality = currentQuality.charAt(0).toUpperCase() + currentQuality.slice(1);
-            const totalCost = document.getElementById('totalCost').textContent;
-            const materialCost = document.getElementById('materialCost').textContent;
-            const laborCost = document.getElementById('laborCost').textContent;
-            const finishingCost = document.getElementById('finishingCost').textContent;
-
-            const estimateText = `
-Type 2 Building Cost Estimate
-================================
+            const summary = `
+Type 2 Building Cost & Materials Estimate
+==========================================
 Date: ${new Date().toLocaleDateString()}
+Area: ${document.getElementById('area').value} ${state.unit === 'sqft' ? 'sq ft' : 'sq m'}
+Floors: ${document.getElementById('floors').value}
+Location: ${document.getElementById('location').options[document.getElementById('location').selectedIndex].text}
+Quality: ${state.quality}
+Concrete Grade: ${state.concreteGrade}
 
-Project Parameters:
-- Built-up Area: ${area} ${currentUnit === 'sqft' ? 'sq. ft' : 'sq. m'}
-- Number of Floors: ${floors}
-- Location: ${location.charAt(0).toUpperCase() + location.slice(1)}
-- Material Quality: ${quality}
+COST SUMMARY
+Total Estimated Cost: ${document.getElementById('totalCost').textContent}
+Materials: ${document.getElementById('materialsCost').textContent}
+Labor: ${document.getElementById('laborCost').textContent}
+Finishing: ${document.getElementById('finishingCost').textContent}
+Contingency: ${document.getElementById('contingencyCost').textContent}
 
-Cost Breakdown:
-- Material Cost: ${materialCost}
-- Labor Cost: ${laborCost}
-- Finishing & Fittings: ${finishingCost}
+MATERIAL QUANTITIES
+Bricks: ${document.getElementById('brickQty').textContent} nos
+Cement: ${document.getElementById('cementQty').textContent} bags
+Sand: ${document.getElementById('sandQty').textContent} m³
+Aggregate: ${document.getElementById('aggQty').textContent} m³
+Steel: ${document.getElementById('steelQty').textContent} kg
+Water: ${document.getElementById('waterQty').textContent} litres
 
-Total Estimated Cost: ${totalCost}
-
-Note: This is an indicative estimate. Actual costs may vary.
+Disclaimer: Estimates are indicative. Consult structural engineer for final quantities.
             `;
-
-            alert('📋 PDF Generation Feature\n\n' + estimateText + '\n(PDF download functionality would be implemented with a backend service)');
+            alert(summary + '\n[PDF download would be implemented with backend]');
         }
 
-        // Calculate on page load
-        window.addEventListener('load', calculateCost);
+        function copyToClipboard() {
+            const text = `
+Total Cost: ${document.getElementById('totalCost').textContent}
+Bricks: ${document.getElementById('brickQty').textContent}
+Cement: ${document.getElementById('cementQty').textContent} bags
+Sand: ${document.getElementById('sandQty').textContent} m³
+Aggregate: ${document.getElementById('aggQty').textContent} m³
+Steel: ${document.getElementById('steelQty').textContent} kg
+            `;
+            navigator.clipboard.writeText(text);
+            alert('✓ Summary copied to clipboard!');
+        }
+
+        // Initialize on load
+        window.addEventListener('load', () => {
+            updateSlabDisplay();
+            calculate();
+        });
     </script>
 </body>
 </html>
